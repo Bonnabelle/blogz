@@ -20,8 +20,11 @@ class BlogHandler(webapp2.RequestHandler):
             The user parameter will be a User object.
         """
 
-        # TODO - filter the query so that only posts by the given user
-        return None
+        # TODO - filter the query so that the page onlyshows posts by the given user
+        user = Post.all().order('-created').filter('author',user)
+        if user:
+            return user.fetch(limit=limit,offset=offset)
+
 
     def get_user_by_name(self, username):
         """ Get a user object from the db, based on their username """
@@ -134,10 +137,12 @@ class NewPostHandler(BlogHandler):
         if title and body:
 
             # create a new Post object and store it in the database
+
+            author = self.user
             post = Post(
                 title=title,
                 body=body,
-                author=self.user)
+                author=author)
             post.put()
 
             # get the id of the new post, so we can render the post's page (via the permalink)
@@ -257,8 +262,6 @@ class SignupHandler(BlogHandler):
             self.redirect('/blog/newpost')
 
 class LoginHandler(BlogHandler):
-
-    # TODO - The login code here is mostly set up for you, but there isn't a template to log in
 
     def render_login_form(self, error=""):
         """ Render the login form with or without an error, based on parameters """
